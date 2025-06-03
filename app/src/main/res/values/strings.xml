@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">SirenaRoboticArm</string>
+	<string name="control">Control</string>
+    <string name="gripper">Gripper</string>
+    <string name="loadAction">Load Action</string>
+    <string name="motor1">Motor 1</string>
+    <string name="motor2">Motor 2</string>
+    <string name="motor3">Motor 3</string>
+    <string name="motor4">Motor 4</string>
+    <string name="motor5">Motor 5</string>
+    <string name="neutral">Neutral</string>
+    <string name="newAction">New Action</string>
+    <string name="newFrame">New Frame</string>
+	<string name="playAction">Play Action</string>
+    <string name="recordFrame">Record Frame</string>
+	<string name="saveAction">Save Action</string>
+	<string name="select">Select</string>
+</resources>

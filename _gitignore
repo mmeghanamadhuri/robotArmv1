@@ -1,0 +1,16 @@
+# Android & Gradle ignore
+.gradle/
+build/
+.idea/
+local.properties
+
+**/build/
+**/.gradle/
+gradle/caches/
+gradle/wrapper/dists/
+
+*.iml
+*.log
+*.jar
+*.zip
+.DS_Store

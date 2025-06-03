@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Permission for general network access -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Permission for multicast -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/sirena_robotic_arm"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/sirena_robotic_arm"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.RoboticArm"
+        tools:targetApi="31">
+        <activity
+            android:name=".SplashScreen"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:theme="@style/Theme.RoboticArm" android:label="Control" android:name="com.example.roboticarm.ArmControl" android:screenOrientation="landscape"/>
+        <activity android:theme="@style/Theme.RoboticArm" android:label="@string/select" android:name="com.example.roboticarm.Select" android:screenOrientation="portrait"/>
+        <activity android:name="com.example.roboticarm.DeviceList" android:screenOrientation="portrait"/>
+        <activity android:name="com.example.roboticarm.RecordAndPlay" android:screenOrientation="landscape"/>
+
+    </application>
+
+</manifest>
