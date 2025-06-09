@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -494,8 +495,8 @@ public class RecordAndPlay extends AppCompatActivity {
             tv_delay.setText("delay");
             final EditText et_delay = new EditText(this);
             et_delay.setText(String.valueOf(this.action.get(selected_frame).pause));
-            et_duration.setInputType(2);
-            et_delay.setInputType(2);
+            et_duration.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            et_delay.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             layout.addView(tv_duration);
             layout.addView(et_duration);
             layout.addView(tv_delay);
@@ -507,6 +508,16 @@ public class RecordAndPlay extends AppCompatActivity {
                     RecordAndPlay.this.action.get(selected_frame).pause = Double.valueOf(et_delay.getText().toString()).doubleValue();
                 }
             });
+            
+            // Add Delete button if it's not the neutral frame (frame 0)
+            if (selected_frame != 0) {
+                builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteFrame(selected_frame);
+                    }
+                });
+            }
+            
             builder.show();
         } catch (Exception e) {
             Toast.makeText(this, "Record frame first", Toast.LENGTH_SHORT).show();
@@ -571,17 +582,17 @@ public class RecordAndPlay extends AppCompatActivity {
                 button.setTextColor(getColor(R.color.buttonTextColor));
                 this.linearLayout.addView(button);
             } else {
-                Button button2 = new Button(this);
-                button2.setText("frame " + Integer.toString(i));
-                button2.setId(this.current_frame);
-                button2.setBackground(getDrawable(R.drawable.framelist_button_background));
-                button2.setTextColor(getColor(R.color.buttonTextColor));
-                this.linearLayout.addView(button2);
-                button2.setOnClickListener(new View.OnClickListener() {
+                Button frameButton = new Button(this);
+                frameButton.setText("frame " + Integer.toString(i));
+                frameButton.setId(i);
+                frameButton.setBackground(getDrawable(R.drawable.framelist_button_background));
+                frameButton.setTextColor(getColor(R.color.buttonTextColor));
+                frameButton.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View view) {
                         RecordAndPlay.this.edit_frame(view);
                     }
                 });
+                this.linearLayout.addView(frameButton);
             }
         }
         this.New_Action_Created = true;
@@ -641,17 +652,19 @@ public class RecordAndPlay extends AppCompatActivity {
             Toast.makeText(this, "Create a new Action!", Toast.LENGTH_SHORT).show();
         } else if (this.Previous_Frame_Recorded) {
             this.current_frame++;
-            Button button = new Button(this);
-            button.setText("frame " + Integer.toString(this.current_frame));
-            button.setId(this.current_frame);
-            button.setBackground(getDrawable(R.drawable.framelist_button_background));
-            button.setTextColor(getColor(R.color.buttonTextColor));
-            button.setOnClickListener(new View.OnClickListener() {
+            
+            Button frameButton = new Button(this);
+            frameButton.setText("frame " + Integer.toString(this.current_frame));
+            frameButton.setId(this.current_frame);
+            frameButton.setBackground(getDrawable(R.drawable.framelist_button_background));
+            frameButton.setTextColor(getColor(R.color.buttonTextColor));
+            frameButton.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View view) {
                     RecordAndPlay.this.edit_frame(view);
                 }
             });
-            this.linearLayout.addView(button);
+            
+            this.linearLayout.addView(frameButton);
             this.scrollView.scrollTo(this.linearLayout.getRight(), 0);
             this.Previous_Frame_Recorded = false;
             Toast.makeText(this, "frame recorded", Toast.LENGTH_SHORT).show();
@@ -778,5 +791,14 @@ public class RecordAndPlay extends AppCompatActivity {
         this.tv_title.setText("title:");
         this.New_Action_Created = false;
         Toast.makeText(this, "Frame list cleared", Toast.LENGTH_SHORT).show();
+    }
+
+    public void deleteFrame(int frameIndex) {
+        if (frameIndex >= 0 && frameIndex < action.size()) {
+            action.remove(frameIndex);
+            current_frame--;
+            update_scrollView_frames();
+            Toast.makeText(this, "Frame deleted", Toast.LENGTH_SHORT).show();
+        }
     }
 }

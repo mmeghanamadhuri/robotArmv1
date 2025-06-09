@@ -27,17 +27,17 @@
         android:onClick="onMotor2Click"
         android:text="@string/motor2"
         android:textColor="@color/buttonTextColor"
-        android:textSize="8sp"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.679" />
-    <Button android:textSize="8sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_gripper" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="27dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:text="@string/gripper" android:onClick="motor_on_click" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.149"/>
-    <Button android:textSize="8sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor5" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="27dp" android:layout_marginBottom="8dp" android:text="@string/motor5" android:onClick="onMotor5Click" android:layout_marginEnd="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.306"/>
-    <Button android:textSize="8sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor4" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="27dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:text="@string/motor4" android:onClick="onMotor4Click" android:layout_marginEnd="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.421"/>
-    <Button android:textSize="8sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor3" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="27dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:text="@string/motor3" android:onClick="onMotor3Click" android:layout_marginEnd="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.548"/>
+    <Button android:textSize="12sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_gripper" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="34dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:text="@string/gripper" android:onClick="motor_on_click" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.149"/>
+    <Button android:textSize="12sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor5" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="34dp" android:layout_marginBottom="8dp" android:text="@string/motor5" android:onClick="onMotor5Click" android:layout_marginEnd="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.306"/>
+    <Button android:textSize="12sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor4" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="34dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:text="@string/motor4" android:onClick="onMotor4Click" android:layout_marginEnd="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.421"/>
+    <Button android:textSize="12sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor3" android:background="@drawable/motorbutton_background" android:layout_width="115dp" android:layout_height="34dp" android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:text="@string/motor3" android:onClick="onMotor3Click" android:layout_marginEnd="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintHorizontal_bias="0" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:layout_constraintVertical_bias="0.548"/>
 
     <Button
         android:id="@+id/bt_motor1"
@@ -50,7 +50,7 @@
         android:onClick="onMotor1Click"
         android:text="@string/motor1"
         android:textColor="@color/buttonTextColor"
-        android:textSize="8sp"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
