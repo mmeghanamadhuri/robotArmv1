@@ -74,4 +74,16 @@
     <TextView android:id="@+id/tv_motorNumber" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:text="Motor 1" android:layout_marginStart="75dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="@+id/sb_motorAngle"/>
     <ImageButton android:id="@+id/bt_sliderDec" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="24dp" android:onClick="dec_slider" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent" app:srcCompat="@android:drawable/arrow_down_float"/>
     <ImageButton android:id="@+id/bt_sliderInc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="24dp" android:onClick="inc_slider" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toEndOf="@+id/sb_motorAngle" app:srcCompat="@android:drawable/arrow_up_float"/>
+    <Button 
+        android:id="@+id/bt_disconnect" 
+        android:layout_width="120dp"
+        android:layout_height="32dp"
+        android:text="Safe Disconnect"
+        android:textSize="10sp"
+        android:textColor="@color/buttonTextColor"
+        android:background="@drawable/button_background"
+        android:layout_marginStart="32dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

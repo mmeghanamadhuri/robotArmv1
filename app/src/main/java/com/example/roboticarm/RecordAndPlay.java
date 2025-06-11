@@ -161,6 +161,55 @@ public class RecordAndPlay extends AppCompatActivity {
         findViewById(R.id.bt_motor4).setOnClickListener(this::onMotor4Click);
         findViewById(R.id.bt_motor5).setOnClickListener(this::onMotor5Click);
         findViewById(R.id.bt_gripper).setOnClickListener(this::onGripperClick);
+
+        Button disconnectButton = (Button) findViewById(R.id.bt_disconnect);
+        disconnectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                // Set specific positions for safe disconnect
+                p1 = 150;
+                p2 = 216;
+                p3 = 236;
+                p4 = 150;
+                p5 = 150;
+                p6 = 150;
+                
+                // Update motor angle if it's currently selected
+                motorAngle.setProgress(getSelectedMotorPosition());
+                
+                // Send rest position command to robot
+                robot.writeDegreesSyncAxMx(RoboticArm.IDs, RoboticArm.MotorTypes, 
+                    new double[]{150.0d, 216.0d, 236.0d, 150.0d, 150.0d, 150.0d}, 
+                    new double[]{5.0d, 5.0d, 5.0d, 5.0d, 5.0d, 5.0d},
+                    57142);
+                
+                try {
+                    Thread.sleep(3000);
+                    
+                    if (robot.mTcpClient != null) {
+                        robot.mTcpClient.stopClient();
+                    }
+                    
+                    Toast.makeText(RecordAndPlay.this, "Robot safely moved to rest position and disconnected", Toast.LENGTH_SHORT).show();
+                    
+                    finish();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Toast.makeText(RecordAndPlay.this, "Error during disconnect", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private int getSelectedMotorPosition() {
+        switch (selected_button) {
+            case 1: return p1;
+            case 2: return p2;
+            case 3: return p3;
+            case 4: return p4;
+            case 5: return p5;
+            case 6: return p6;
+            default: return 150;
+        }
     }
 
     // Separate click methods

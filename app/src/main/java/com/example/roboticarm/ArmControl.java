@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 public class ArmControl extends AppCompatActivity {
 
@@ -37,6 +38,7 @@ public class ArmControl extends AppCompatActivity {
     Button neutral4;
     Button neutral5;
     Button neutral6;
+    Button disconnectButton;
     int p1 = 150;
     int p2 = 150;
     int p3 = 150;
@@ -45,6 +47,7 @@ public class ArmControl extends AppCompatActivity {
     int p6 = 150;
     int resolution = 5;
     RobotCom robot = new RobotCom();
+    Robot robotArm = new Robot();
     int stepSize = 5;
 
     /* access modifiers changed from: protected */
@@ -75,6 +78,7 @@ public class ArmControl extends AppCompatActivity {
         this.motor4Inc = (ImageButton) findViewById(R.id.bt_motor4Inc);
         this.motor5Inc = (ImageButton) findViewById(R.id.bt_motor5Inc);
         this.motor6Inc = (ImageButton) findViewById(R.id.bt_motor6Inc);
+        this.disconnectButton = (Button) findViewById(R.id.bt_disconnect);
         this.ip = getIntent().getStringExtra("ip_add");
         this.robot.openTcp(this.ip);
         this.m1.setProgress(150);
@@ -292,6 +296,43 @@ public class ArmControl extends AppCompatActivity {
             public void onClick(View view) {
                 if (ArmControl.this.m6.getProgress() > ArmControl.this.SliderMin) {
                     ArmControl.this.m6.setProgress(ArmControl.this.m6.getProgress() - ArmControl.this.resolution);
+                }
+            }
+        });
+        this.disconnectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                p1 = 150;
+                p2 = 216;
+                p3 = 236;
+                p4 = 150;
+                p5 = 150;
+                p6 = 150;
+                
+                m1.setProgress(150);
+                m2.setProgress(216);
+                m3.setProgress(236);
+                m4.setProgress(150);
+                m5.setProgress(150);
+                m6.setProgress(150);
+                
+                robot.writeDegreesSyncAxMx(robotArm.IDs, robotArm.MotorTypes, 
+                    new double[]{150.0d, 216.0d, 236.0d, 150.0d, 150.0d, 150.0d}, 
+                    new double[]{5.0d, 5.0d, 5.0d, 5.0d, 5.0d, 5.0d},
+                    57142);
+                
+                try {
+                    Thread.sleep(3000);
+                    
+                    if (robot.mTcpClient != null) {
+                        robot.mTcpClient.stopClient();
+                    }
+                    
+                    Toast.makeText(ArmControl.this, "Robot safely moved to rest position and disconnected", Toast.LENGTH_SHORT).show();
+                    
+                    finish();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Toast.makeText(ArmControl.this, "Error during disconnect", Toast.LENGTH_SHORT).show();
                 }
             }
         });

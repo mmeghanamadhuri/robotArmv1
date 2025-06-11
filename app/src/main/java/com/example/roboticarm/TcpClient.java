@@ -80,19 +80,39 @@ public class TcpClient {
     }
 
     public void stopClient() {
-        try {
-            this.mRun = false;
-            if (this.mBufferOut != null) {
-                this.mBufferOut.flush();
-                this.mBufferOut.close();
-            }
-            this.mMessageListener = null;
-            this.mBufferIn = null;
-            this.mBufferOut = null;
-            this.mServerMessage = null;
-            this.socket.close();
-        } catch (Exception e) {
+        Log.e("TCP Client", "Stopping client...");
+        this.mRun = false;
+        
+        if (this.mBufferOut != null) {
+            this.mBufferOut.flush();
+            this.mBufferOut.close();
         }
+        
+        if (this.sWriter != null) {
+            try {
+                this.sWriter.close();
+            } catch (IOException e) {
+                Log.e("TCP", "Error closing sWriter", e);
+            }
+        }
+        
+        if (this.mBufferIn != null) {
+            try {
+                this.mBufferIn.close();
+            } catch (IOException e) {
+                Log.e("TCP", "Error closing mBufferIn", e);
+            }
+        }
+        
+        if (this.socket != null) {
+            try {
+                this.socket.close();
+            } catch (IOException e) {
+                Log.e("TCP", "Error closing socket", e);
+            }
+        }
+        
+        Log.e("TCP Client", "Client stopped.");
     }
 
     public static byte[] toByteArray(List<Byte> in) {
