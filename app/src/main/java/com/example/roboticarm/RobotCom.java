@@ -58,6 +58,13 @@ public class RobotCom {
         new ConnectTask().execute(new String[]{""});
     }
 
+    public void closeTcp() {
+        if (mTcpClient != null) {
+            mTcpClient.stopClient();
+            mTcpClient = null;
+        }
+    }
+
     public class sendMessageBytes extends AsyncTask<byte[], Void, String> {
         public sendMessageBytes() {
         }

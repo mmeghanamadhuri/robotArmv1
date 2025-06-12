@@ -19,4 +19,6 @@
     <string name="redo">Redo</string>
     <string name="loop">Loop</string>
     <string name="stop">Stop</string>
+    <string name="play">Play</string>
+    <string name="play_stop">Play/Stop</string>
 </resources>

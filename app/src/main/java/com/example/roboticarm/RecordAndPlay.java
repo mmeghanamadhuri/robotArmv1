@@ -30,1029 +30,543 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
+import android.os.Build;
+import android.animation.ValueAnimator;
+import android.content.res.Resources;
+import android.content.SharedPreferences;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import android.graphics.Rect;
+import android.os.Handler;
+import androidx.core.content.ContextCompat;
 
 public class RecordAndPlay extends AppCompatActivity {
+    // Constants
+    private static final float DRAG_SCALE = 1.1f;
+    private static final int SCROLL_SPEED = 10;
+    private static final int SCROLL_EDGE_THRESHOLD = 100; // pixels from edge to start scrolling
+    private static final int LONG_PRESS_DURATION = 500; // milliseconds
+
+    // State flags
     boolean New_Action_Created = false;
     boolean Previous_Frame_Recorded = true;
     Robot RoboticArm = new Robot();
     int SliderMax = 285;
     int SliderMin = 15;
-    List<Frame> action = new ArrayList();
+    List<Frame> action = new ArrayList<>();
     Stack<List<Frame>> undoStack = new Stack<>();
     Stack<List<Frame>> redoStack = new Stack<>();
     String action_name = "";
     int current_frame = 0;
-    Button gripper;
     String ip;
-    LinearLayout linearLayout;
-    Button loadAction;
-    Button motor1;
-    Button motor2;
-    Button motor3;
-    Button motor4;
-    Button motor5;
-    SeekBar motorAngle;
-    Button neutral;
-    Button newAction;
-    Button newFrame;
     int p1 = 150;
     int p2 = 150;
     int p3 = 150;
     int p4 = 150;
     int p5 = 150;
     int p6 = 150;
-    Button playAction;
-    Button stopAction;
-    ImageButton undoButton;
-    ImageButton redoButton;
-    ImageButton loopButton;
     boolean playing = false;
     boolean looping = false;
     boolean[] pressed = {false, false, false, false, false, false};
-    Button recordFrame;
     int resolution = 1;
     RobotCom robot = new RobotCom();
-    Button saveAction;
-    ImageButton sb_Dec;
-    ImageButton sb_Inc;
-    HorizontalScrollView scrollView;
     int selected_button = 1;
     int stepSize = 1;
-    TextView tv_motorNum;
-    TextView tv_title;
+
+    // View declarations
+    private Button playAction;
+    private Button loopButton;
+    private ImageButton undoButton;
+    private ImageButton redoButton;
+    private ImageButton sb_Dec;
+    private ImageButton sb_Inc;
+    private Button motor1;
+    private Button motor2;
+    private Button motor3;
+    private Button motor4;
+    private Button motor5;
+    private Button gripper;
+    private Button neutral;
+    private Button newAction;
+    private Button newFrame;
+    private Button recordFrame;
+    private Button saveAction;
+    private Button loadAction;
+    private SeekBar motorAngle;
+    private TextView tv_motorNum;
+    private TextView tv_title;
+    private HorizontalScrollView scrollView;
+    private LinearLayout linearLayout;
+
+    // State variables
+    private boolean isPlayingAction = false;
+    private int currentPlayingFrame = 0;
+    private Handler playHandler = new Handler();
+    private Handler scrollHandler = new Handler();
+    private boolean isDragging = false;
+    private View draggedView = null;
+    private int draggedPosition = -1;
+    private float dragStartX;
+    private float lastTouchX;
+
+    private Runnable playRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!isPlayingAction) {
+                return;
+            }
+
+            if (currentPlayingFrame < action.size()) {
+                Frame frame = action.get(currentPlayingFrame);
+                double[] positions = frame.getPositions();
+                robot.writeDegreesSyncAxMx(
+                    RoboticArm.IDs,
+                    RoboticArm.MotorTypes,
+                    positions,
+                    RoboticArm.Neutral_RPMs,
+                    RoboticArm.Baudrate
+                );
+                
+                highlightCurrentFrame(currentPlayingFrame);
+                currentPlayingFrame++;
+                
+                // Schedule next frame using frame duration
+                playHandler.postDelayed(this, (long)frame.getDuration());
+            } else {
+                if (looping) {
+                    currentPlayingFrame = 0;
+                    playHandler.post(this);
+                } else {
+                    stopPlayback();
+                }
+            }
+        }
+    };
 
     /* access modifiers changed from: protected */
     @SuppressLint({"ClickableViewAccessibility"})
-    public void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView((int) R.layout.activity_record_and_play);
-        this.sb_Dec = (ImageButton) findViewById(R.id.bt_motor1Dec);
-        this.sb_Inc = (ImageButton) findViewById(R.id.bt_motor1Inc);
-        this.motor1 = (Button) findViewById(R.id.bt_motor1);
-        this.motor2 = (Button) findViewById(R.id.bt_motor2);
-        this.motor3 = (Button) findViewById(R.id.bt_motor3);
-        this.motor4 = (Button) findViewById(R.id.bt_motor4);
-        this.motor5 = (Button) findViewById(R.id.bt_motor5);
-        this.gripper = (Button) findViewById(R.id.bt_gripper);
-        this.neutral = (Button) findViewById(R.id.bt_neutral);
-        this.motorAngle = (SeekBar) findViewById(R.id.sb_motorAngle);
-        this.scrollView = (HorizontalScrollView) findViewById(R.id.sv_frameList);
-        this.linearLayout = (LinearLayout) findViewById(R.id.ll_frames);
-        this.tv_title = (TextView) findViewById(R.id.tv_title);
-        this.linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-        this.tv_motorNum = (TextView) findViewById(R.id.tv_motorNumber);
-        this.ip = getIntent().getStringExtra("ip_add");
-        this.robot.openTcp(this.ip);
-        this.robot.writeDegreesSyncAxMx(this.RoboticArm.IDs, this.RoboticArm.MotorTypes, this.RoboticArm.Neutral_Positions, this.RoboticArm.Neutral_RPMs, (long) this.RoboticArm.Baudrate);
-        this.motorAngle.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
-                SeekBar seekBar2 = seekBar;
-                switch (RecordAndPlay.this.selected_button) {
-                    case 1:
-                        int progress2 = Math.round((float) (progress / RecordAndPlay.this.stepSize)) * RecordAndPlay.this.stepSize;
-                        seekBar2.setProgress(progress2);
-                        RecordAndPlay.this.p1 = progress2;
-                        RecordAndPlay.this.robot.writeDegreesSyncAxMx(new byte[]{1, 2, 3, 4, 5, 6}, new byte[]{0, 0, 0, 0, 0, 0}, new double[]{(double) RecordAndPlay.this.p1, (double) RecordAndPlay.this.p2, (double) RecordAndPlay.this.p3, (double) RecordAndPlay.this.p4, (double) RecordAndPlay.this.p5, (double) RecordAndPlay.this.p6}, new double[]{20.0d, 20.0d, 20.0d, 20.0d, 20.0d, 20.0d}, 57142);
-                        return;
-                    case 2:
-                        int progress3 = Math.round((float) (progress / RecordAndPlay.this.stepSize)) * RecordAndPlay.this.stepSize;
-                        seekBar2.setProgress(progress3);
-                        RecordAndPlay.this.p2 = progress3;
-                        RecordAndPlay.this.robot.writeDegreesSyncAxMx(new byte[]{1, 2, 3, 4, 5, 6}, new byte[]{0, 0, 0, 0, 0, 0}, new double[]{(double) RecordAndPlay.this.p1, (double) RecordAndPlay.this.p2, (double) RecordAndPlay.this.p3, (double) RecordAndPlay.this.p4, (double) RecordAndPlay.this.p5, (double) RecordAndPlay.this.p6}, new double[]{20.0d, 20.0d, 20.0d, 20.0d, 20.0d, 20.0d}, 57142);
-                        return;
-                    case 3:
-                        int progress4 = Math.round((float) (progress / RecordAndPlay.this.stepSize)) * RecordAndPlay.this.stepSize;
-                        seekBar2.setProgress(progress4);
-                        RecordAndPlay.this.p3 = progress4;
-                        RecordAndPlay.this.robot.writeDegreesSyncAxMx(new byte[]{1, 2, 3, 4, 5, 6}, new byte[]{0, 0, 0, 0, 0, 0}, new double[]{(double) RecordAndPlay.this.p1, (double) RecordAndPlay.this.p2, (double) RecordAndPlay.this.p3, (double) RecordAndPlay.this.p4, (double) RecordAndPlay.this.p5, (double) RecordAndPlay.this.p6}, new double[]{20.0d, 20.0d, 20.0d, 20.0d, 20.0d, 20.0d}, 57142);
-                        return;
-                    case 4:
-                        int progress5 = Math.round((float) (progress / RecordAndPlay.this.stepSize)) * RecordAndPlay.this.stepSize;
-                        seekBar2.setProgress(progress5);
-                        RecordAndPlay.this.p4 = progress5;
-                        RecordAndPlay.this.robot.writeDegreesSyncAxMx(new byte[]{1, 2, 3, 4, 5, 6}, new byte[]{0, 0, 0, 0, 0, 0}, new double[]{(double) RecordAndPlay.this.p1, (double) RecordAndPlay.this.p2, (double) RecordAndPlay.this.p3, (double) RecordAndPlay.this.p4, (double) RecordAndPlay.this.p5, (double) RecordAndPlay.this.p6}, new double[]{20.0d, 20.0d, 20.0d, 20.0d, 20.0d, 20.0d}, 57142);
-                        return;
-                    case 5:
-                        int progress6 = Math.round((float) (progress / RecordAndPlay.this.stepSize)) * RecordAndPlay.this.stepSize;
-                        seekBar2.setProgress(progress6);
-                        RecordAndPlay.this.p5 = progress6;
-                        RecordAndPlay.this.robot.writeDegreesSyncAxMx(new byte[]{1, 2, 3, 4, 5, 6}, new byte[]{0, 0, 0, 0, 0, 0}, new double[]{(double) RecordAndPlay.this.p1, (double) RecordAndPlay.this.p2, (double) RecordAndPlay.this.p3, (double) RecordAndPlay.this.p4, (double) RecordAndPlay.this.p5, (double) RecordAndPlay.this.p6}, new double[]{20.0d, 20.0d, 20.0d, 20.0d, 20.0d, 20.0d}, 57142);
-                        return;
-                    case 6:
-                        int progress7 = Math.round((float) (progress / RecordAndPlay.this.stepSize)) * RecordAndPlay.this.stepSize;
-                        seekBar2.setProgress(progress7);
-                        RecordAndPlay.this.p6 = progress7;
-                        if (RecordAndPlay.this.p6 > 150) {
-                            RobotCom robotCom = RecordAndPlay.this.robot;
-                            RobotCom robotCom2 = robotCom;
-                            robotCom2.writeDegreesSyncAxMx(new byte[]{1, 2, 3, 4, 5, 6}, new byte[]{0, 0, 0, 0, 0, 0}, new double[]{(double) RecordAndPlay.this.p1, (double) RecordAndPlay.this.p2, (double) RecordAndPlay.this.p3, (double) RecordAndPlay.this.p4, (double) RecordAndPlay.this.p5, (double) RecordAndPlay.this.p6}, new double[]{20.0d, 20.0d, 20.0d, 20.0d, 20.0d, 20.0d}, 57142);
-                            return;
-                        }
-                        return;
-                    default:
-                        int i = progress;
-                        return;
-                }
-            }
+        setContentView(R.layout.activity_record_and_play);
 
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
+        // Initialize views and controls
+        initializeViews();
+        setupMotorControls();
+        setupFrameList();
+        
+        // Get IP from intent and connect
+        ip = getIntent().getStringExtra("ip_add");
+        if (ip != null && robot != null) {
+            robot.openTcp(ip);
+            robot.writeDegreesSyncAxMx(
+                RoboticArm.IDs,
+                RoboticArm.MotorTypes,
+                RoboticArm.Neutral_Positions,
+                RoboticArm.Neutral_RPMs,
+                RoboticArm.Baudrate
+            );
+        }
+    }
 
-            public void onStopTrackingTouch(SeekBar seekBar) {
-            }
-        });
-
-        findViewById(R.id.bt_motor1).setOnClickListener(this::onMotor1Click);
-        findViewById(R.id.bt_motor2).setOnClickListener(this::onMotor2Click);
-        findViewById(R.id.bt_motor3).setOnClickListener(this::onMotor3Click);
-        findViewById(R.id.bt_motor4).setOnClickListener(this::onMotor4Click);
-        findViewById(R.id.bt_motor5).setOnClickListener(this::onMotor5Click);
-        findViewById(R.id.bt_gripper).setOnClickListener(this::onGripperClick);
-
-        Button disconnectButton = (Button) findViewById(R.id.bt_disconnect);
-        disconnectButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                // Set specific positions for safe disconnect
-                p1 = 150;
-                p2 = 216;
-                p3 = 236;
-                p4 = 150;
-                p5 = 150;
-                p6 = 150;
-                
-                // Update motor angle if it's currently selected
-                motorAngle.setProgress(getSelectedMotorPosition());
-                
-                // Send rest position command to robot
-                robot.writeDegreesSyncAxMx(RoboticArm.IDs, RoboticArm.MotorTypes, 
-                    new double[]{150.0d, 216.0d, 236.0d, 150.0d, 150.0d, 150.0d}, 
-                    new double[]{5.0d, 5.0d, 5.0d, 5.0d, 5.0d, 5.0d},
-                    57142);
-                
-                try {
-                    Thread.sleep(3000);
-                    
-                    if (robot.mTcpClient != null) {
-                        robot.mTcpClient.stopClient();
-                    }
-                    
-                    Toast.makeText(RecordAndPlay.this, "Robot safely moved to rest position and disconnected", Toast.LENGTH_SHORT).show();
-                    
-                    finish();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Toast.makeText(RecordAndPlay.this, "Error during disconnect", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        // Initialize new buttons
+    private void initializeViews() {
+        // Initialize all buttons and views
+        playAction = findViewById(R.id.bt_playAction);
+        playAction.setText(R.string.play_stop);
+        loopButton = findViewById(R.id.bt_loop);
         undoButton = findViewById(R.id.bt_undo);
         redoButton = findViewById(R.id.bt_redo);
-        loopButton = findViewById(R.id.bt_loop);
-        stopAction = findViewById(R.id.bt_stop);
-        
-        // Set click listeners for new buttons
+        sb_Dec = findViewById(R.id.bt_sliderDec);
+        sb_Inc = findViewById(R.id.bt_sliderInc);
+        motor1 = findViewById(R.id.bt_motor1);
+        motor2 = findViewById(R.id.bt_motor2);
+        motor3 = findViewById(R.id.bt_motor3);
+        motor4 = findViewById(R.id.bt_motor4);
+        motor5 = findViewById(R.id.bt_motor5);
+        gripper = findViewById(R.id.bt_gripper);
+        neutral = findViewById(R.id.bt_neutral);
+        newAction = findViewById(R.id.bt_newAction);
+        newFrame = findViewById(R.id.bt_newFrame);
+        recordFrame = findViewById(R.id.bt_recordFrame);
+        saveAction = findViewById(R.id.bt_saveAction);
+        loadAction = findViewById(R.id.bt_loadAction);
+        motorAngle = findViewById(R.id.sb_motorAngle);
+        tv_motorNum = findViewById(R.id.tv_motorNumber);
+        tv_title = findViewById(R.id.tv_title);
+        scrollView = findViewById(R.id.sv_frameList);
+        linearLayout = findViewById(R.id.ll_frames);
+
+        // Set initial text
+        tv_motorNum.setText(R.string.motor1);
+    }
+
+    private void setupFrameList() {
+        playAction.setOnClickListener(v -> play_on_click(v));
+        loopButton.setOnClickListener(v -> {
+            looping = !looping;
+            loopButton.setSelected(looping);
+        });
         undoButton.setOnClickListener(v -> undo_on_click(v));
         redoButton.setOnClickListener(v -> redo_on_click(v));
-        loopButton.setOnClickListener(v -> loop_on_click(v));
-        stopAction.setOnClickListener(v -> stop_on_click(v));
-
-        // Initialize drag and drop functionality
-        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
-            @Override
-            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                int dragFlags = ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
-                return makeMovementFlags(dragFlags, 0);
+        scrollView.setOnTouchListener((v, event) -> {
+            if (isDragging) {
+                handleDrag(event);
+                return true;
             }
+            return false;
+        });
+    }
 
+    private void setupMotorControls() {
+        motorAngle.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                int fromPosition = viewHolder.getAdapterPosition();
-                int toPosition = target.getAdapterPosition();
-                
-                if (fromPosition == 0 || toPosition == 0) {
-                    // Don't allow moving the neutral frame
-                    return false;
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    switch (selected_button) {
+                        case 1:
+                            p1 = progress;
+                            break;
+                        case 2:
+                            p2 = progress;
+                            break;
+                        case 3:
+                            p3 = progress;
+                            break;
+                        case 4:
+                            p4 = progress;
+                            break;
+                        case 5:
+                            p5 = progress;
+                            break;
+                        case 6:
+                            p6 = progress;
+                            break;
+                    }
+                    updateRobotPosition();
                 }
-
-                // Save state before moving
-                saveToUndoStack();
-
-                // Swap frames in the action list
-                Frame movedFrame = action.get(fromPosition);
-                action.remove(fromPosition);
-                action.add(toPosition, movedFrame);
-
-                // Update UI
-                update_scrollView_frames();
-                return true;
             }
 
             @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                // Not used
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public boolean isLongPressDragEnabled() {
-                return true;
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        // Initialize motor buttons with click listeners
+        motor1.setOnClickListener(v -> {
+            selected_button = 1;
+            motorAngle.setProgress(p1);
+            tv_motorNum.setText(getString(R.string.motor1));
+        });
+
+        motor2.setOnClickListener(v -> {
+            selected_button = 2;
+            motorAngle.setProgress(p2);
+            tv_motorNum.setText(getString(R.string.motor2));
+        });
+
+        motor3.setOnClickListener(v -> {
+            selected_button = 3;
+            motorAngle.setProgress(p3);
+            tv_motorNum.setText(getString(R.string.motor3));
+        });
+
+        motor4.setOnClickListener(v -> {
+            selected_button = 4;
+            motorAngle.setProgress(p4);
+            tv_motorNum.setText(getString(R.string.motor4));
+        });
+
+        motor5.setOnClickListener(v -> {
+            selected_button = 5;
+            motorAngle.setProgress(p5);
+            tv_motorNum.setText(getString(R.string.motor5));
+        });
+
+        gripper.setOnClickListener(v -> {
+            selected_button = 6;
+            motorAngle.setProgress(p6);
+            tv_motorNum.setText(getString(R.string.gripper));
+        });
+
+        neutral.setOnClickListener(v -> {
+            p1 = 150;
+            p2 = 150;
+            p3 = 150;
+            p4 = 150;
+            p5 = 150;
+            p6 = 150;
+            motorAngle.setProgress(150);
+            updateRobotPosition();
+        });
+    }
+
+    private void updateRobotPosition() {
+        if (robot != null) {
+            robot.writeDegreesSyncAxMx(
+                RoboticArm.IDs,
+                RoboticArm.MotorTypes,
+                new double[]{p1, p2, p3, p4, p5, p6},
+                RoboticArm.Neutral_RPMs,
+                RoboticArm.Baudrate
+            );
+        }
+    }
+
+    public void newFrame_on_click(View view) {
+        // Check for duplicate frame
+        if (!action.isEmpty()) {
+            Frame lastFrame = action.get(action.size() - 1);
+            double[] lastPositions = lastFrame.getPositions();
+            if (lastPositions[0] == p1 && lastPositions[1] == p2 && 
+                lastPositions[2] == p3 && lastPositions[3] == p4 && 
+                lastPositions[4] == p5 && lastPositions[5] == p6) {
+                Toast.makeText(this, "Frame with identical positions already exists", Toast.LENGTH_SHORT).show();
+                return;
             }
-        };
+        }
+        
+        Frame frame = new Frame(p1, p2, p3, p4, p5, p6);
+        action.add(frame);
+        saveToUndoStack();
+        updateFrameList();
+        current_frame = action.size() - 1;
+        updateMotorPositions();
+    }
 
-        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
-        touchHelper.attachToRecyclerView(new RecyclerView(this));
+    private void updateFrameList() {
+        linearLayout.removeAllViews();
+        
+        for (int i = 0; i < action.size(); i++) {
+            TextView item = new TextView(this);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.setMargins(8, 4, 8, 4);
+            item.setLayoutParams(params);
+            item.setText("Frame " + (i + 1));
+            item.setTextSize(14);
+            item.setPadding(16, 8, 16, 8);
+            item.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.white));
+            item.setElevation(0f);
+            
+            final int position = i;
+            
+            // Add long click listener for deletion
+            item.setOnLongClickListener(v -> {
+                if (!isDragging) {
+                    new AlertDialog.Builder(this)
+                        .setTitle("Delete Frame")
+                        .setMessage("Are you sure you want to delete this frame?")
+                        .setPositiveButton("Delete", (dialog, which) -> deleteFrame(position))
+                        .setNegativeButton("Cancel", null)
+                        .show();
+                }
+                return true;
+            });
+            
+            item.setOnTouchListener(createFrameTouchListener(position));
+            linearLayout.addView(item);
+        }
+        
+        // Highlight current frame if exists
+        if (current_frame >= 0 && current_frame < action.size()) {
+            highlightCurrentFrame(current_frame);
+        }
+    }
 
-        // Add touch listeners for drag and drop
-        linearLayout.setOnTouchListener(new View.OnTouchListener() {
-            private float startX;
-            private float startY;
-            private int draggedButtonIndex = -1;
-
+    private View.OnTouchListener createFrameTouchListener(final int position) {
+        return new View.OnTouchListener() {
+            private long pressStartTime;
+            private boolean isLongPress = false;
+            private float initialTouchX;
+            
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        startX = event.getX();
-                        startY = event.getY();
-                        // Find which button was touched
-                        for (int i = 0; i < linearLayout.getChildCount(); i++) {
-                            View child = linearLayout.getChildAt(i);
-                            if (child instanceof Button) {
-                                float left = child.getX();
-                                float right = left + child.getWidth();
-                                float top = child.getY();
-                                float bottom = top + child.getHeight();
-                                if (startX >= left && startX <= right && startY >= top && startY <= bottom) {
-                                    if (i != 0) { // Don't allow dragging neutral frame
-                                        draggedButtonIndex = i;
-                                        child.setAlpha(0.5f);
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                        break;
+                        pressStartTime = System.currentTimeMillis();
+                        initialTouchX = event.getRawX();
+                        v.setPressed(true);
+                        return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        if (draggedButtonIndex != -1) {
-                            float deltaX = event.getX() - startX;
-                            View draggedButton = linearLayout.getChildAt(draggedButtonIndex);
-                            draggedButton.setTranslationX(deltaX);
-
-                            // Check if we should swap with adjacent buttons
-                            for (int i = 1; i < linearLayout.getChildCount(); i++) {
-                                if (i != draggedButtonIndex) {
-                                    View otherButton = linearLayout.getChildAt(i);
-                                    float otherCenter = otherButton.getX() + otherButton.getWidth() / 2;
-                                    float draggedCenter = draggedButton.getX() + deltaX + draggedButton.getWidth() / 2;
-
-                                    if (Math.abs(draggedCenter - otherCenter) < draggedButton.getWidth() / 2) {
-                                        // Save state before swapping
-                                        saveToUndoStack();
-
-                                        // Swap frames in the action list
-                                        Frame temp = action.get(draggedButtonIndex);
-                                        action.set(draggedButtonIndex, action.get(i));
-                                        action.set(i, temp);
-
-                                        // Update UI
-                                        draggedButton.setTranslationX(0);
-                                        draggedButton.setAlpha(1.0f);
-                                        draggedButtonIndex = -1;
-                                        update_scrollView_frames();
-                                        break;
-                                    }
-                                }
+                        if (!isLongPress && 
+                            System.currentTimeMillis() - pressStartTime > LONG_PRESS_DURATION) {
+                            if (position != 0) {
+                                startDrag(v, position);
                             }
                         }
-                        break;
+                        
+                        if (isDragging && draggedView == v) {
+                            handleDrag(event);
+                        }
+                        return true;
 
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
-                        if (draggedButtonIndex != -1) {
-                            View draggedButton = linearLayout.getChildAt(draggedButtonIndex);
-                            draggedButton.setTranslationX(0);
-                            draggedButton.setAlpha(1.0f);
-                            draggedButtonIndex = -1;
+                        if (isDragging && draggedView == v) {
+                            endDrag();
+                        } else if (!isLongPress && 
+                                 Math.abs(event.getRawX() - initialTouchX) < 10) {
+                            handleFrameClick(position);
                         }
-                        break;
+                        
+                        v.setPressed(false);
+                        isLongPress = false;
+                        return true;
                 }
-                return true;
+                return false;
             }
-        });
+        };
     }
 
-    private int getSelectedMotorPosition() {
-        switch (selected_button) {
-            case 1: return p1;
-            case 2: return p2;
-            case 3: return p3;
-            case 4: return p4;
-            case 5: return p5;
-            case 6: return p6;
-            default: return 150;
-        }
+    private void startDrag(View view, int position) {
+        isDragging = true;
+        draggedView = view;
+        draggedPosition = position;
+        
+        view.setElevation(8f);
+        view.setScaleX(DRAG_SCALE);
+        view.setScaleY(DRAG_SCALE);
+        view.setAlpha(0.7f);
+        view.setBackgroundResource(R.color.light_grey);
+        
+        scrollHandler.post(autoScrollRunnable);
     }
 
-    // Separate click methods
-    public void onMotor1Click(View view) {
-        this.selected_button = 1;
-        if (this.pressed[0]) {
-            this.motorAngle.setProgress(this.p1);
-        } else {
-            this.motorAngle.setProgress(150);
-        }
-        this.pressed[0] = true;
-        this.tv_motorNum.setText(R.string.motor1);
-        Toast.makeText(this, "Motor 1 clicked", Toast.LENGTH_SHORT).show();
-    }
+    private void handleDrag(MotionEvent event) {
+        float deltaX = event.getRawX() - lastTouchX;
+        draggedView.setTranslationX(draggedView.getTranslationX() + deltaX);
+        lastTouchX = event.getRawX();
 
-    public void onMotor2Click(View view) {
-        Toast.makeText(this, "Motor 2 clicked", Toast.LENGTH_SHORT).show();
-        this.selected_button = 2;
-        if (this.pressed[1]) {
-            this.motorAngle.setProgress(this.p2);
-        } else {
-            this.motorAngle.setProgress(150);
-        }
-        this.pressed[1] = true;
-        this.tv_motorNum.setText(R.string.motor2);
-    }
+        // Check for position swap
+        float centerX = draggedView.getX() + draggedView.getWidth() / 2;
+        int newPosition = -1;
 
-    public void onMotor3Click(View view) {
-        this.selected_button = 3;
-        if (this.pressed[2]) {
-            this.motorAngle.setProgress(this.p3);
-        } else {
-            this.motorAngle.setProgress(150);
-        }
-        this.pressed[2] = true;
-        this.tv_motorNum.setText(R.string.motor3);
-        Toast.makeText(this, "Motor 3 clicked", Toast.LENGTH_SHORT).show();
-    }
-
-    public void onMotor4Click(View view) {
-        this.selected_button = 4;
-        if (this.pressed[3]) {
-            this.motorAngle.setProgress(this.p4);
-        } else {
-            this.motorAngle.setProgress(150);
-        }
-        this.pressed[3] = true;
-        this.tv_motorNum.setText(R.string.motor4);
-        Toast.makeText(this, "Motor 4 clicked", Toast.LENGTH_SHORT).show();
-    }
-
-    public void onMotor5Click(View view) {
-        this.selected_button = 5;
-        if (this.pressed[4]) {
-            this.motorAngle.setProgress(this.p5);
-        } else {
-            this.motorAngle.setProgress(150);
-        }
-        this.pressed[4] = true;
-        this.tv_motorNum.setText(R.string.motor5);
-        Toast.makeText(this, "Motor 5 clicked", Toast.LENGTH_SHORT).show();
-    }
-
-    public void onGripperClick(View view) {
-
-        Toast.makeText(this, "Gripper clicked", Toast.LENGTH_SHORT).show();
-        this.selected_button = 6;
-        if (this.pressed[5]) {
-            this.motorAngle.setProgress(this.p6);
-        } else {
-            this.motorAngle.setProgress(150);
-        }
-        this.pressed[5] = true;
-        this.tv_motorNum.setText(R.string.gripper);
-    }
-
-    public void inc_slider(View view) {
-        switch (this.selected_button) {
-            case 1:
-                if (this.motorAngle.getProgress() < this.SliderMax) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() + this.resolution);
-                    return;
+        for (int i = 0; i < linearLayout.getChildCount(); i++) {
+            if (i != draggedPosition) {
+                View child = linearLayout.getChildAt(i);
+                float childCenterX = child.getX() + child.getWidth() / 2;
+                if (Math.abs(centerX - childCenterX) < child.getWidth() / 2) {
+                    newPosition = i;
+                    break;
                 }
-                return;
-            case 2:
-                if (this.motorAngle.getProgress() < this.SliderMax) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() + this.resolution);
-                    return;
-                }
-                return;
-            case 3:
-                if (this.motorAngle.getProgress() < this.SliderMax) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() + this.resolution);
-                    return;
-                }
-                return;
-            case 4:
-                if (this.motorAngle.getProgress() < this.SliderMax) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() + this.resolution);
-                    return;
-                }
-                return;
-            case 5:
-                if (this.motorAngle.getProgress() < this.SliderMax) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() + this.resolution);
-                    return;
-                }
-                return;
-            case 6:
-                if (this.motorAngle.getProgress() < this.SliderMax) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() + this.resolution);
-                    return;
-                }
-                return;
-            default:
-                return;
-        }
-    }
-
-    public void dec_slider(View view) {
-        switch (this.selected_button) {
-            case 1:
-                if (this.motorAngle.getProgress() > this.SliderMin) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() - this.resolution);
-                    return;
-                }
-                return;
-            case 2:
-                if (this.motorAngle.getProgress() > this.SliderMin) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() - this.resolution);
-                    return;
-                }
-                return;
-            case 3:
-                if (this.motorAngle.getProgress() > this.SliderMin) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() - this.resolution);
-                    return;
-                }
-                return;
-            case 4:
-                if (this.motorAngle.getProgress() > this.SliderMin) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() - this.resolution);
-                    return;
-                }
-                return;
-            case 5:
-                if (this.motorAngle.getProgress() > this.SliderMin) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() - this.resolution);
-                    return;
-                }
-                return;
-            case 6:
-                if (this.motorAngle.getProgress() > this.SliderMin) {
-                    this.motorAngle.setProgress(this.motorAngle.getProgress() - this.resolution);
-                    return;
-                }
-                return;
-            default:
-                return;
-        }
-    }
-
-    public void motor_on_click(View view) {
-        int id = view.getId(); // Get the clicked button ID
-
-        switch (id) {
-            case 2131230761:
-                this.selected_button = 6;
-                if (this.pressed[5]) {
-                    this.motorAngle.setProgress(this.p6);
-                } else {
-                    this.motorAngle.setProgress(150);
-                }
-                this.pressed[5] = true;
-                this.tv_motorNum.setText(R.string.gripper);
-                return;
-            case 2131230760:
-                this.selected_button = 1;
-                if (this.pressed[0]) {
-                    this.motorAngle.setProgress(this.p1);
-                } else {
-                    this.motorAngle.setProgress(150);
-                }
-                this.pressed[0] = true;
-                this.tv_motorNum.setText(R.string.motor1);
-                return;
-            case 2131230764:
-                this.selected_button = 2;
-                if (this.pressed[1]) {
-                    this.motorAngle.setProgress(this.p2);
-                } else {
-                    this.motorAngle.setProgress(150);
-                }
-                this.pressed[1] = true;
-                this.tv_motorNum.setText(R.string.motor2);
-                return;
-            case 2131230768:
-                this.selected_button = 3;
-                if (this.pressed[2]) {
-                    this.motorAngle.setProgress(this.p3);
-                } else {
-                    this.motorAngle.setProgress(150);
-                }
-                this.pressed[2] = true;
-                this.tv_motorNum.setText(R.string.motor3);
-                return;
-            case 2131230772:
-                this.selected_button = 4;
-                if (this.pressed[3]) {
-                    this.motorAngle.setProgress(this.p4);
-                } else {
-                    this.motorAngle.setProgress(150);
-                }
-                this.pressed[3] = true;
-                this.tv_motorNum.setText(R.string.motor4);
-                return;
-            case 2131230776:
-                this.selected_button = 5;
-                if (this.pressed[4]) {
-                    this.motorAngle.setProgress(this.p5);
-                } else {
-                    this.motorAngle.setProgress(150);
-                }
-                this.pressed[4] = true;
-                this.tv_motorNum.setText(R.string.motor5);
-                return;
-            default:
-                return;
-        }
-    }
-
-    public void neutral_on_click(View view) {
-        this.p1 = 150;
-        this.p2 = 150;
-        this.p3 = 150;
-        this.p4 = 150;
-        this.p5 = 150;
-        this.p6 = 150;
-        this.motorAngle.setProgress(150);
-        this.robot.writeDegreesSyncAxMx(this.RoboticArm.IDs, this.RoboticArm.MotorTypes, this.RoboticArm.Neutral_Positions, this.RoboticArm.Neutral_RPMs, (long) this.RoboticArm.Baudrate);
-    }
-
-    public void newAction_on_click(View view) {
-        if (!this.New_Action_Created) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle((CharSequence) "Action Name");
-            final EditText input = new EditText(this);
-            input.setInputType(1);
-            builder.setView((View) input);
-            builder.setPositiveButton((CharSequence) "Create", (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    RecordAndPlay.this.action_name = input.getText().toString();
-                    TextView textView = RecordAndPlay.this.tv_title;
-                    textView.setText("title:" + RecordAndPlay.this.action_name);
-                    RecordAndPlay.this.action.clear();
-                    RecordAndPlay.this.action.add(new Frame(RecordAndPlay.this.RoboticArm.Neutral_Positions));
-                    RecordAndPlay.this.action.get(0).duration = 1.0d;
-                    RecordAndPlay.this.action.get(0).pause = 1.0d;
-                    RecordAndPlay.this.add_neutral_frame_to_scroll_view();
-                    RecordAndPlay.this.New_Action_Created = true;
-                    Toast.makeText(RecordAndPlay.this, "New Action created", Toast.LENGTH_SHORT).show();
-                }
-            });
-            builder.show();
-            return;
-        }
-        Toast.makeText(this, "New Action already created", Toast.LENGTH_SHORT).show();
-    }
-
-    public void newFrame_on_click(View view) {
-        if (!this.New_Action_Created) {
-            Toast.makeText(this, "Create a new Action!", Toast.LENGTH_SHORT).show();
-        } else if (this.Previous_Frame_Recorded) {
-            this.p1 = 150;
-            this.p2 = 150;
-            this.p3 = 150;
-            this.p4 = 150;
-            this.p5 = 150;
-            this.p6 = 150;
-            this.motorAngle.setProgress(150);
-            this.current_frame++;
-            Button button = new Button(this);
-            button.setText("N");
-            button.setId(this.current_frame);
-            button.setBackground(getDrawable(R.drawable.framelist_button_background));
-            button.setTextColor(getColor(R.color.buttonTextColor));
-            button.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View view) {
-                    RecordAndPlay.this.edit_frame(view);
-                }
-            });
-            this.linearLayout.addView(button);
-            this.scrollView.scrollTo(this.linearLayout.getRight(), 0);
-            this.Previous_Frame_Recorded = false;
-        } else {
-            Toast.makeText(this, "Record the frame!", Toast.LENGTH_SHORT).show();
-        }
-        this.action.add(new Frame(new double[]{(double) this.p1, (double) this.p2, (double) this.p3, (double) this.p4, (double) this.p5, (double) this.p6}));
-        this.action.get(this.current_frame).duration = 1.0d;
-        this.action.get(this.current_frame).pause = 1.0d;
-        this.Previous_Frame_Recorded = true;
-    }
-
-    public void add_neutral_frame_to_scroll_view() {
-        Button button = new Button(this);
-        button.setBackground(getDrawable(R.drawable.framelist_button_background));
-        button.setTextColor(getColor(R.color.buttonTextColor));
-        button.setText("N");
-        button.setId(this.current_frame);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) {
-                RecordAndPlay.this.edit_frame(view);
             }
-        });
-        this.linearLayout.addView(button);
-        Toast.makeText(this, "Neutral frame added", Toast.LENGTH_SHORT).show();
-    }
+        }
 
-    public void edit_frame(View view) {
-        try {
-            final int selected_frame = view.getId();
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle((CharSequence) "Frame");
-            LinearLayout layout = new LinearLayout(this);
-            LinearLayout linearLayout2 = this.linearLayout;
-            layout.setOrientation(LinearLayout.VERTICAL);
-            TextView tv_duration = new TextView(this);
-            tv_duration.setText("duration");
-            final EditText et_duration = new EditText(this);
-            et_duration.setText(String.valueOf(this.action.get(selected_frame).duration));
-            TextView tv_delay = new TextView(this);
-            tv_delay.setText("delay");
-            final EditText et_delay = new EditText(this);
-            et_delay.setText(String.valueOf(this.action.get(selected_frame).pause));
-            et_duration.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-            et_delay.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-            layout.addView(tv_duration);
-            layout.addView(et_duration);
-            layout.addView(tv_delay);
-            layout.addView(et_delay);
-            builder.setView((View) layout);
-            builder.setPositiveButton((CharSequence) "Save", (DialogInterface.OnClickListener) new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    RecordAndPlay.this.action.get(selected_frame).duration = Double.valueOf(et_duration.getText().toString()).doubleValue();
-                    RecordAndPlay.this.action.get(selected_frame).pause = Double.valueOf(et_delay.getText().toString()).doubleValue();
-                }
-            });
+        if (newPosition != -1 && newPosition != draggedPosition && newPosition != 0) {
+            saveToUndoStack();
+            Frame draggedFrame = action.remove(draggedPosition);
+            action.add(newPosition, draggedFrame);
+            draggedPosition = newPosition;
+            updateFrameList();
             
-            // Add Delete button if it's not the neutral frame (frame 0)
-            if (selected_frame != 0) {
-                builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        deleteFrame(selected_frame);
-                    }
-                });
-            }
+            // Maintain drag visual state
+            View v = linearLayout.getChildAt(newPosition);
+            v.setElevation(8f);
+            v.setScaleX(DRAG_SCALE);
+            v.setScaleY(DRAG_SCALE);
+            v.setAlpha(0.7f);
+            v.setBackgroundResource(R.color.light_grey);
             
-            builder.show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Record frame first", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, 
+                "Frame moved to position " + (newPosition + 1), 
+                Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void loadAction_on_click(View view) {
-        List<File> files = getListFiles(getFilesDir());
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Action Name");
-        final Spinner input = new Spinner(this);
-        String[] action_names = new String[files.size()];
-        for (int i = 0; i < files.size(); i++) {
-            action_names[i] = files.get(i).getName();
+    private void endDrag() {
+        if (draggedView != null) {
+            draggedView.setElevation(0f);
+            draggedView.setScaleX(1f);
+            draggedView.setScaleY(1f);
+            draggedView.setAlpha(1f);
+            draggedView.setTranslationX(0);
+            draggedView.setBackgroundResource(android.R.color.white);
         }
-        ArrayAdapter dataAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, action_names);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
-        input.setAdapter(dataAdapter);
-        builder.setView(input);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    RecordAndPlay.this.action_name = input.getSelectedItem().toString().replace(".txt", "");
-                    TextView textView = RecordAndPlay.this.tv_title;
-                    textView.setText("title:" + RecordAndPlay.this.action_name);
-                    RecordAndPlay.this.action.clear();
-                    String readFile = RecordAndPlay.this.readFromFile(RecordAndPlay.this, RecordAndPlay.this.action_name.concat(".txt"));
-                    RecordAndPlay.this.action = RecordAndPlay.this.get_action_from_string(readFile);
-                    RecordAndPlay.this.update_scrollView_frames();
-                    Toast.makeText(RecordAndPlay.this, "Action loaded", Toast.LENGTH_SHORT).show();
-                } catch (Exception e) {
-                    Toast.makeText(RecordAndPlay.this, "No Actions", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        builder.show();
+        
+        scrollHandler.removeCallbacks(autoScrollRunnable);
+        isDragging = false;
+        draggedView = null;
+        draggedPosition = -1;
     }
 
-    private List<File> getListFiles(File parentDir) {
-        ArrayList<File> inFiles = new ArrayList<>();
-        for (File file : parentDir.listFiles()) {
-            if (file.isDirectory()) {
-                inFiles.addAll(getListFiles(file));
-            } else if (file.getName().endsWith(".txt")) {
-                inFiles.add(file);
-            }
-        }
-        return inFiles;
+    private void handleFrameClick(int position) {
+        current_frame = position;
+        updateMotorPositions();
+        highlightSelectedFrame(position);
     }
 
-    public void update_scrollView_frames() {
-        if (this.linearLayout.getChildCount() > 0) {
-            this.linearLayout.removeAllViews();
-        }
-        this.current_frame = this.action.size() - 1;
-        for (int i = 0; i < this.action.size(); i++) {
-            if (i == 0) {
-                Button button = new Button(this);
-                button.setText("N");
-                button.setId(i);
-                button.setBackground(getDrawable(R.drawable.framelist_button_background));
-                button.setTextColor(getColor(R.color.buttonTextColor));
-                this.linearLayout.addView(button);
+    private void highlightSelectedFrame(int position) {
+        for (int i = 0; i < linearLayout.getChildCount(); i++) {
+            View child = linearLayout.getChildAt(i);
+            if (i == position) {
+                child.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.dark_pink));
             } else {
-                Button frameButton = new Button(this);
-                frameButton.setText("frame " + Integer.toString(i));
-                frameButton.setId(i);
-                frameButton.setBackground(getDrawable(R.drawable.framelist_button_background));
-                frameButton.setTextColor(getColor(R.color.buttonTextColor));
-                frameButton.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View view) {
-                        RecordAndPlay.this.edit_frame(view);
-                    }
-                });
-                this.linearLayout.addView(frameButton);
+                child.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.white));
             }
-        }
-        this.New_Action_Created = true;
-    }
-
-    public List<Frame> get_action_from_string(String str) {
-        String[] lines = str.split("E");
-        List<Frame> act = new ArrayList<>();
-        for (int i = 0; i < lines.length; i++) {
-            double dur = Double.valueOf(lines[i].split("D")[0]).doubleValue();
-            lines[i] = lines[i].split("D")[1];
-            double pau = Double.valueOf(lines[i].split("P")[0]).doubleValue();
-            lines[i] = lines[i].split("P")[1];
-            String[] motorvals = lines[i].split("A");
-            double[] positions = new double[motorvals.length];
-            for (int j = 0; j < motorvals.length; j++) {
-                positions[j] = Double.valueOf(motorvals[j]).doubleValue();
-            }
-            Frame f = new Frame(positions);
-            f.duration = dur;
-            f.pause = pau;
-            act.add(f);
-        }
-        return act;
-    }
-
-    /* access modifiers changed from: private */
-    public String readFromFile(Context context, String action_name2) {
-        try {
-            InputStream inputStream = context.openFileInput(action_name2);
-            if (inputStream == null) {
-                return "";
-            }
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            StringBuilder stringBuilder = new StringBuilder();
-            while (true) {
-                String readLine = bufferedReader.readLine();
-                String receiveString = readLine;
-                if (readLine != null) {
-                    stringBuilder.append(receiveString);
-                } else {
-                    inputStream.close();
-                    return stringBuilder.toString();
-                }
-            }
-        } catch (FileNotFoundException e) {
-            Log.e("login activity", "File not found: " + e.toString());
-            return "";
-        } catch (IOException e2) {
-            Log.e("login activity", "Can not read file: " + e2.toString());
-            return "";
         }
     }
 
-    public void recordFrame_on_click(View view) {
-        saveToUndoStack(); // Save state before recording new frame
-        if (!this.New_Action_Created) {
-            Toast.makeText(this, "Create a new Action!", Toast.LENGTH_SHORT).show();
-        } else if (this.Previous_Frame_Recorded) {
-            this.current_frame++;
-            
-            Button frameButton = new Button(this);
-            frameButton.setText("frame " + Integer.toString(this.current_frame));
-            frameButton.setId(this.current_frame);
-            frameButton.setBackground(getDrawable(R.drawable.framelist_button_background));
-            frameButton.setTextColor(getColor(R.color.buttonTextColor));
-            frameButton.setOnClickListener(new View.OnClickListener() {
-                public void onClick(View view) {
-                    RecordAndPlay.this.edit_frame(view);
-                }
-            });
-            
-            this.linearLayout.addView(frameButton);
-            this.scrollView.scrollTo(this.linearLayout.getRight(), 0);
-            this.Previous_Frame_Recorded = false;
-            Toast.makeText(this, "frame recorded", Toast.LENGTH_SHORT).show();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (robot != null) {
+            robot.closeTcp();
+        }
+        if (playHandler != null) {
+            playHandler.removeCallbacks(playRunnable);
+            playHandler.removeCallbacks(autoScrollRunnable);
+        }
+    }
+
+    private void updateMotorPositions() {
+        if (current_frame >= 0 && current_frame < action.size()) {
+            Frame frame = action.get(current_frame);
+            double[] positions = frame.getPositions();
+            p1 = (int)positions[0];
+            p2 = (int)positions[1];
+            p3 = (int)positions[2];
+            p4 = (int)positions[3];
+            p5 = (int)positions[4];
+            p6 = (int)positions[5];
+
+            motorAngle.setProgress((int)positions[selected_button - 1]);
+            updateRobotPosition();
+        }
+    }
+
+    public void play_on_click(View view) {
+        if (!isPlayingAction) {
+            startPlayback();
         } else {
-            Toast.makeText(this, "Record the frame!", Toast.LENGTH_SHORT).show();
-        }
-        this.action.add(new Frame(new double[]{(double) this.p1, (double) this.p2, (double) this.p3, (double) this.p4, (double) this.p5, (double) this.p6}));
-        this.action.get(this.current_frame).duration = 1.0d;
-        this.action.get(this.current_frame).pause = 1.0d;
-        this.Previous_Frame_Recorded = true;
-    }
-
-    public void playAction_on_click(View view) {
-        Toast.makeText(this, "Playing Action", Toast.LENGTH_SHORT).show();
-        if (!playing) {
-            playing = true;
-            new PlayActionTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new Void[0]);
-            // Highlight current frame being played
-            for (int i = 0; i < linearLayout.getChildCount(); i++) {
-                View child = linearLayout.getChildAt(i);
-                if (child instanceof Button) {
-                    child.setBackgroundResource(R.drawable.framelist_button_background_playing);
-                }
-            }
+            stopPlayback();
         }
     }
 
-    public void saveAction_on_click(View view) {
-        if (this.action_name.compareTo("") != 0) {
-            String data = "";
-            for (int i = 0; i < this.action.size(); i++) {
-                String data2 = data.concat(Double.toString(this.action.get(i).duration)).concat("D").concat(Double.toString(this.action.get(i).pause)).concat("P");
-                for (int j = 0; j < this.action.get(i).positions.length; j++) {
-                    data2 = data2.concat(Double.toString(this.action.get(i).positions[j]));
-                    if (j < this.action.get(i).positions.length - 1) {
-                        data2 = data2.concat("A");
-                    }
-                }
-                data = data2.concat("E");
-            }
-            writeToFile(data, this);
-            Toast.makeText(this, "Action Saved", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void writeToFile(String data, Context context) {
-        try {
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(this.action_name.replace(".txt", "").concat(".txt"), 0));
-            outputStreamWriter.write(data);
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
-
-    private class PlayActionTask extends AsyncTask<Void, Integer, Void> {
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            int currentFrame = values[0];
-            // Highlight current frame
-            for (int i = 0; i < linearLayout.getChildCount(); i++) {
-                View child = linearLayout.getChildAt(i);
-                if (child instanceof Button) {
-                    if (i == currentFrame) {
-                        child.setBackgroundResource(R.drawable.framelist_button_background_playing);
-                    } else {
-                        child.setBackgroundResource(R.drawable.framelist_button_background);
-                    }
-                }
-            }
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            do {
-                // Check if playback should continue
-                if (!playing) break;
-
-                // Initialize motor speeds
-                double[] rpms = new double[RoboticArm.NumberOfMotors];
-                boolean not_neutral = false;
-
-                // Check if last frame is not in neutral position
-                for (int j = 0; j < RoboticArm.NumberOfMotors; j++) {
-                    if (action.get(action.size() - 1).positions[j] != 150.0d) {
-                        not_neutral = true;
-                        break;
-                    }
-                }
-
-                // Return to neutral position if needed
-                if (not_neutral) {
-                    double[] positions = action.get(action.size() - 1).positions;
-                    for (int j = 0; j < RoboticArm.NumberOfMotors; j++) {
-                        double diff = Math.abs(RoboticArm.Neutral_Positions[j] - positions[j]);
-                        if (RoboticArm.MotorTypes[j] == RoboticArm.AX12 || RoboticArm.MotorTypes[j] == RoboticArm.AX18) {
-                            rpms[j] = (diff / 180.0d) / 0.03333333333333333d;
-                        } else {
-                            rpms[j] = (diff / 360.0d) / 0.03333333333333333d;
-                        }
-                    }
-                    robot.writeDegreesSyncAxMx(RoboticArm.IDs, RoboticArm.MotorTypes, RoboticArm.Neutral_Positions, rpms, (long) RoboticArm.Baudrate);
-                    try {
-                        Thread.sleep((long) ((int) ((0.03333333333333333d + 0.03333333333333333d) * 60.0d * 1000.0d)));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                // Play through all frames
-                if (action.size() > 1) {
-                    for (int i = 1; i < action.size() && playing; i++) {
-                        // Update UI to show current frame
-                        publishProgress(i);
-
-                        double dur = action.get(i).duration / 60.0d;
-                        double pau = action.get(i).pause / 60.0d;
-
-                        // Calculate motor speeds
-                        for (int j = 0; j < RoboticArm.NumberOfMotors; j++) {
-                            double diff = Math.abs(action.get(i).positions[j] - action.get(i - 1).positions[j]);
-                            if (RoboticArm.MotorTypes[j] == RoboticArm.AX12 || RoboticArm.MotorTypes[j] == RoboticArm.AX18) {
-                                rpms[j] = (diff / 180.0d) / dur;
-                            } else {
-                                rpms[j] = (diff / 360.0d) / dur;
-                            }
-                        }
-
-                        // Move motors
-                        robot.writeDegreesSyncAxMx(RoboticArm.IDs, RoboticArm.MotorTypes, action.get(i).positions, rpms, (long) RoboticArm.Baudrate);
-
-                        // Wait for duration and pause
-                        try {
-                            Thread.sleep((long) ((int) ((dur + pau) * 60.0d * 1000.0d)));
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } while (looping && playing);
-
-            playing = false;
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            // Reset frame highlighting
-            for (int i = 0; i < linearLayout.getChildCount(); i++) {
-                View child = linearLayout.getChildAt(i);
-                if (child instanceof Button) {
-                    child.setBackgroundResource(R.drawable.framelist_button_background);
-                }
-            }
-        }
-    }
-
-    public void delete_on_click(View view) {
-        if (this.linearLayout.getChildCount() > 0) {
-            this.linearLayout.removeAllViews();
-        }
-        this.action.clear();
-        this.current_frame = 0;
-        this.tv_title.setText("title:");
-        this.New_Action_Created = false;
-        Toast.makeText(this, "Frame list cleared", Toast.LENGTH_SHORT).show();
-    }
-
-    public void deleteFrame(int frameIndex) {
-        saveToUndoStack(); // Save state before deleting frame
-        if (frameIndex >= 0 && frameIndex < action.size()) {
-            action.remove(frameIndex);
-            current_frame--;
-            update_scrollView_frames();
-            Toast.makeText(this, "Frame deleted", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Add new methods for undo/redo functionality
     private void saveToUndoStack() {
         List<Frame> currentState = new ArrayList<>();
         for (Frame frame : action) {
-            currentState.add(new Frame(frame.positions));
-            currentState.get(currentState.size() - 1).duration = frame.duration;
-            currentState.get(currentState.size() - 1).pause = frame.pause;
+            Frame copy = new Frame(
+                frame.getName(),
+                frame.getDuration(),
+                frame.getPause(),
+                frame.getPositions().clone()
+            );
+            currentState.add(copy);
         }
         undoStack.push(currentState);
-        redoStack.clear(); // Clear redo stack when new action is performed
+        redoStack.clear();
     }
 
     public void undo_on_click(View view) {
@@ -1060,19 +574,19 @@ public class RecordAndPlay extends AppCompatActivity {
             // Save current state to redo stack
             List<Frame> currentState = new ArrayList<>();
             for (Frame frame : action) {
-                currentState.add(new Frame(frame.positions));
-                currentState.get(currentState.size() - 1).duration = frame.duration;
-                currentState.get(currentState.size() - 1).pause = frame.pause;
+                currentState.add(new Frame(
+                    frame.name,
+                    frame.duration,
+                    frame.pause,
+                    frame.positions.clone()
+                ));
             }
             redoStack.push(currentState);
-
+            
             // Restore previous state
             action = undoStack.pop();
-            current_frame = action.size() - 1;
-            update_scrollView_frames();
+            updateFrameList();
             Toast.makeText(this, "Undo successful", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Nothing to undo", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1081,39 +595,105 @@ public class RecordAndPlay extends AppCompatActivity {
             // Save current state to undo stack
             List<Frame> currentState = new ArrayList<>();
             for (Frame frame : action) {
-                currentState.add(new Frame(frame.positions));
-                currentState.get(currentState.size() - 1).duration = frame.duration;
-                currentState.get(currentState.size() - 1).pause = frame.pause;
+                currentState.add(new Frame(
+                    frame.name,
+                    frame.duration,
+                    frame.pause,
+                    frame.positions.clone()
+                ));
             }
             undoStack.push(currentState);
-
+            
             // Restore next state
             action = redoStack.pop();
-            current_frame = action.size() - 1;
-            update_scrollView_frames();
+            updateFrameList();
             Toast.makeText(this, "Redo successful", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Nothing to redo", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void loop_on_click(View view) {
-        looping = !looping;
-        if (looping) {
-            loopButton.setImageResource(R.drawable.loop_active);
-            Toast.makeText(this, "Loop mode enabled", Toast.LENGTH_SHORT).show();
-        } else {
-            loopButton.setImageResource(R.drawable.loop);
-            Toast.makeText(this, "Loop mode disabled", Toast.LENGTH_SHORT).show();
+    private Runnable autoScrollRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isDragging) {
+                int scrollX = scrollView.getScrollX();
+                int width = scrollView.getWidth();
+                float touchX = lastTouchX - scrollView.getLeft();
+
+                if (touchX < SCROLL_EDGE_THRESHOLD) {
+                    scrollView.smoothScrollBy(-SCROLL_SPEED, 0);
+                } else if (touchX > width - SCROLL_EDGE_THRESHOLD) {
+                    scrollView.smoothScrollBy(SCROLL_SPEED, 0);
+                }
+                scrollHandler.postDelayed(this, 16); // ~60fps
+            }
+        }
+    };
+
+    private void highlightCurrentFrame(int frameIndex) {
+        for (int i = 0; i < linearLayout.getChildCount(); i++) {
+            View child = linearLayout.getChildAt(i);
+            if (i == frameIndex && isPlayingAction) {
+                child.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.very_light_grey));
+            } else if (i == current_frame && !isPlayingAction) {
+                child.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, R.color.dark_pink));
+            } else {
+                child.setBackgroundColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.white));
+            }
         }
     }
 
-    public void stop_on_click(View view) {
-        if (playing) {
-            playing = false;
-            looping = false;
-            loopButton.setImageResource(R.drawable.loop);
-            Toast.makeText(this, "Playback stopped", Toast.LENGTH_SHORT).show();
+    private void startPlayback() {
+        if (!isPlayingAction && !action.isEmpty()) {
+            isPlayingAction = true;
+            currentPlayingFrame = 0;
+            playHandler.post(playRunnable);
+            playAction.setText(R.string.stop);
         }
+    }
+
+    private void stopPlayback() {
+        isPlayingAction = false;
+        playHandler.removeCallbacks(playRunnable);
+        playAction.setText(R.string.play);
+        currentPlayingFrame = 0;
+        updateMotorPositions();
+    }
+
+    private void deleteFrame(int position) {
+        if (position >= 0 && position < action.size()) {
+            saveToUndoStack();
+            action.remove(position);
+            
+            // Update current frame if needed
+            if (current_frame >= action.size()) {
+                current_frame = action.size() - 1;
+            }
+            
+            updateFrameList();
+            if (current_frame >= 0) {
+                updateMotorPositions();
+            }
+            
+            Toast.makeText(this, "Frame deleted", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void recordFrame_on_click(View view) {
+        if (current_frame >= 0 && current_frame < action.size()) {
+            saveToUndoStack();
+            Frame frame = action.get(current_frame);
+            frame.setPositions(new double[]{p1, p2, p3, p4, p5, p6});
+            updateFrameList();
+            Toast.makeText(this, "Frame updated", Toast.LENGTH_SHORT).show();
+        } else {
+            // If no frame is selected, create a new one
+            Frame frame = new Frame(p1, p2, p3, p4, p5, p6);
+            action.add(frame);
+            saveToUndoStack();
+            current_frame = action.size() - 1;
+            updateFrameList();
+            Toast.makeText(this, "New frame recorded", Toast.LENGTH_SHORT).show();
+        }
+        updateMotorPositions();
     }
 }

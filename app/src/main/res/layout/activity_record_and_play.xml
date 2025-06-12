@@ -1,24 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:aapt="http://schemas.android.com/aapt"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/rnp_background" android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/rnp_background"
+    tools:context=".RecordAndPlay">
 
     <ImageView
         android:id="@+id/imageView2"
         android:layout_width="216dp"
         android:layout_height="310dp"
-        android:layout_marginStart="135dp"
+        android:layout_marginStart="119dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="4dp"
+        android:layout_marginEnd="-200dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/cl_frameList"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.541"
+        app:layout_constraintVertical_bias="0.535"
         app:srcCompat="@drawable/sirena_robotic_arm" />
 
-    <SeekBar android:id="@+id/sb_motorAngle" android:layout_width="200dp" android:layout_height="22dp" android:max="285" android:progress="150" android:min="15" app:layout_constraintBottom_toTopOf="@+id/tv_motorNumber" app:layout_constraintStart_toEndOf="@+id/bt_sliderDec"/>
+    <SeekBar
+        android:id="@+id/sb_motorAngle"
+        android:layout_width="200dp"
+        android:layout_height="22dp"
+        android:max="285"
+        android:min="15"
+        android:progress="150"
+        app:layout_constraintBottom_toTopOf="@+id/tv_motorNumber"
+        app:layout_constraintStart_toEndOf="@+id/bt_sliderDec" />
 
     <Button
         android:id="@+id/bt_motor2"
@@ -26,7 +39,6 @@
         android:layout_height="38dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/motorbutton_background"
         android:onClick="onMotor2Click"
@@ -34,16 +46,16 @@
         android:textColor="@color/buttonTextColor"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/bt_motor3"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/bt_motor3"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.69" />
+        app:layout_constraintVertical_bias="0.705" />
 
     <Button
         android:id="@+id/bt_gripper"
-        android:layout_width="wrap_content"
-        android:layout_height="38dp"
+        android:layout_width="91dp"
+        android:layout_height="36dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
@@ -55,9 +67,10 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/imageView2"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.173" />
+        app:layout_constraintVertical_bias="0.19" />
 
     <Button
         android:id="@+id/bt_motor5"
@@ -65,7 +78,6 @@
         android:layout_height="38dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/motorbutton_background"
         android:onClick="onMotor5Click"
@@ -73,11 +85,11 @@
         android:textColor="@color/buttonTextColor"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.003"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/bt_gripper"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/bt_gripper"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.305" />
+        app:layout_constraintVertical_bias="0.317" />
 
     <Button
         android:id="@+id/bt_motor4"
@@ -94,10 +106,10 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.004"
+        app:layout_constraintHorizontal_bias="0.003"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.436" />
+        app:layout_constraintVertical_bias="0.45" />
 
     <Button
         android:id="@+id/bt_motor3"
@@ -116,13 +128,12 @@
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="@+id/bt_motor4"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.57" />
+        app:layout_constraintVertical_bias="0.58000004" />
 
     <Button
         android:id="@+id/bt_motor1"
         android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
@@ -133,17 +144,17 @@
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/bt_motor2"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.82" />
+        app:layout_constraintVertical_bias="0.831" />
 
     <Button
         android:id="@+id/bt_recordFrame"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="38dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="24dp"
         android:background="@drawable/button_background"
         android:onClick="recordFrame_on_click"
         android:text="@string/recordFrame"
@@ -156,8 +167,8 @@
         android:id="@+id/bt_saveAction"
         android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginEnd="44dp"
-        android:layout_marginBottom="9dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/button_background"
         android:onClick="saveAction_on_click"
         android:text="@string/saveAction"
@@ -170,23 +181,24 @@
         android:id="@+id/bt_playAction"
         android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="-10dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="9dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/button_background"
-        android:onClick="playAction_on_click"
-        android:text="@string/playAction"
+        android:onClick="play_on_click"
+        android:text="@string/play_stop"
         android:textColor="@color/buttonTextColor"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/bt_stop"
+        app:layout_constraintEnd_toStartOf="@+id/bt_saveAction"
+        app:layout_constraintHorizontal_bias="0.377"
         app:layout_constraintStart_toEndOf="@+id/imageView2" />
 
     <Button
         android:id="@+id/bt_loadAction"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginStart="64dp"
+        android:layout_marginStart="200dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
@@ -201,10 +213,10 @@
 
     <Button
         android:id="@+id/bt_newFrame"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="38dp"
         android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="24dp"
         android:background="@drawable/button_background"
         android:onClick="newFrame_on_click"
         android:text="Neutral Frame"
@@ -215,26 +227,30 @@
 
     <Button
         android:id="@+id/bt_neutral"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="-11dp"
+        android:layout_marginTop="736dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="20dp"
         android:background="@drawable/button_background"
         android:onClick="neutral_on_click"
         android:text="@string/neutral"
         android:textColor="@color/buttonTextColor"
         android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/bt_newAction"
+        app:layout_constraintHorizontal_bias="0.611"
+        app:layout_constraintStart_toEndOf="@+id/bt_sliderInc"
         app:layout_constraintStart_toStartOf="@+id/imageView2"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/bt_newAction"
-        android:layout_width="120dp"
+        android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginStart="64dp"
+        android:layout_marginStart="200dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button_background"
@@ -247,29 +263,13 @@
         app:layout_constraintStart_toEndOf="@+id/imageView2"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/bt_stop"
-        android:layout_width="wrap_content"
-        android:layout_height="38dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="9dp"
-        android:background="@drawable/button_background"
-        android:onClick="stop_on_click"
-        android:text="@string/stop"
-        android:textColor="@color/buttonTextColor"
-        android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/bt_saveAction"
-        app:layout_constraintStart_toEndOf="@+id/bt_playAction" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_frameList"
-        android:layout_width="371dp"
-        android:layout_height="242dp"
-        android:layout_marginStart="-10dp"
+        android:layout_width="905dp"
+        android:layout_height="599dp"
+        android:layout_marginStart="175dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginEnd="24dp"
         android:layout_marginBottom="8dp"
         android:background="@drawable/framelist_background"
         android:clipChildren="false"
@@ -278,7 +278,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@+id/imageView2"
-        app:layout_constraintTop_toBottomOf="@+id/bt_loadAction">
+        app:layout_constraintTop_toBottomOf="@+id/bt_loadAction"
+        app:layout_constraintVertical_bias="1.0">
 
         <TextView
             android:id="@+id/tv_title"
@@ -293,7 +294,7 @@
         <ImageButton
             android:id="@+id/bt_undo"
             android:layout_width="40dp"
-            android:layout_height="0dp"
+            android:layout_height="40dp"
             android:layout_marginStart="46dp"
             android:layout_marginTop="3dp"
             android:layout_marginEnd="-35dp"
@@ -301,8 +302,9 @@
             android:background="@android:color/transparent"
             android:padding="5dp"
             android:scaleType="centerInside"
+            android:tint="@color/colorAccent"
             app:layout_constraintEnd_toStartOf="@+id/bt_redo"
-            app:layout_constraintHorizontal_bias="0.715"
+            app:layout_constraintHorizontal_bias="0.877"
             app:layout_constraintStart_toEndOf="@+id/tv_title"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/undo" />
@@ -310,38 +312,23 @@
         <ImageButton
             android:id="@+id/bt_redo"
             android:layout_width="40dp"
-            android:layout_height="0dp"
+            android:layout_height="40dp"
             android:layout_marginTop="3dp"
             android:adjustViewBounds="true"
             android:background="@android:color/transparent"
             android:padding="5dp"
             android:scaleType="centerInside"
+            android:tint="@color/colorAccent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.739"
+            app:layout_constraintHorizontal_bias="0.9"
             app:layout_constraintStart_toStartOf="@+id/tv_title"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/redo" />
 
         <ImageButton
-            android:id="@+id/bt_loop"
-            android:layout_width="40dp"
-            android:layout_height="0dp"
-            android:layout_marginStart="34dp"
-            android:layout_marginTop="3dp"
-            android:adjustViewBounds="true"
-            android:background="@android:color/transparent"
-            android:padding="5dp"
-            android:scaleType="centerInside"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.865"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/loop" />
-
-        <ImageButton
             android:id="@+id/bt_delete"
             android:layout_width="40dp"
-            android:layout_height="0dp"
+            android:layout_height="40dp"
             android:adjustViewBounds="true"
             android:background="@android:color/transparent"
             android:onClick="delete_on_click"
@@ -353,26 +340,49 @@
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/delete" />
 
+        <ImageButton
+            android:id="@+id/bt_loop"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/button_background"
+            android:onClick="toggleLoopMode"
+            android:src="@drawable/loop"
+            android:contentDescription="Loop"
+            android:tint="@color/dark_pink"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/bt_delete" />
+
         <HorizontalScrollView
             android:id="@+id/sv_frameList"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/inner_framelist_background"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_title">
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            app:layout_constraintEnd_toEndOf="@id/cl_frameList"
+            app:layout_constraintStart_toStartOf="@id/cl_frameList"
+            app:layout_constraintTop_toBottomOf="@id/tv_title">
 
             <LinearLayout
                 android:id="@+id/ll_frames"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/transparent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp" />
+
         </HorizontalScrollView>
     </androidx.constraintlayout.widget.ConstraintLayout>
-    <TextView android:id="@+id/tv_motorNumber" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:text="Motor 1" android:layout_marginStart="75dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="@+id/sb_motorAngle"/>
+
+    <TextView
+        android:id="@+id/tv_motorNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="75dp"
+        android:layout_marginBottom="8dp"
+        android:text="Motor 1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/sb_motorAngle" />
 
     <ImageButton
         android:id="@+id/bt_sliderDec"
@@ -384,21 +394,60 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:srcCompat="@android:drawable/arrow_down_float" />
-    <ImageButton android:id="@+id/bt_sliderInc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="24dp" android:onClick="inc_slider" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toEndOf="@+id/sb_motorAngle" app:srcCompat="@android:drawable/arrow_up_float"/>
+
+    <ImageButton
+        android:id="@+id/bt_sliderInc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:onClick="inc_slider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sb_motorAngle"
+        app:srcCompat="@android:drawable/arrow_up_float" />
 
     <Button
         android:id="@+id/bt_disconnect"
         android:layout_width="wrap_content"
         android:layout_height="38dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
         android:layout_marginBottom="360dp"
         android:background="@drawable/button_background"
         android:text="Disconnect"
         android:textColor="@color/buttonTextColor"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/bt_neutral"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/bt_loop"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/button_background"
+        android:text="Loop Start/Stop"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/bt_saveAction"
+        app:layout_constraintStart_toEndOf="@+id/bt_playAction" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="bt_motor1,bt_motor4,bt_motor5,bt_gripper,bt_motor3,bt_motor2,imageView2" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
