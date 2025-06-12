@@ -15,4 +15,8 @@
     <string name="recordFrame">Record Frame</string>
 	<string name="saveAction">Save Action</string>
 	<string name="select">Select</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="loop">Loop</string>
+    <string name="stop">Stop</string>
 </resources>

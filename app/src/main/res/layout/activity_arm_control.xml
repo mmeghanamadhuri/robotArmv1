@@ -11,6 +11,7 @@
         android:id="@+id/imageView"
         android:layout_width="200dp"
         android:layout_height="0dp"
+        android:layout_marginStart="-11dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/sirena_robotic_arm" />
@@ -20,37 +21,159 @@
     <SeekBar android:id="@+id/motor3" android:layout_width="0dp" android:layout_height="30dp" android:maxHeight="20dp" android:max="285" android:progress="150" android:minHeight="20dp" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" android:min="15" app:layout_constraintBottom_toTopOf="@+id/motor4" app:layout_constraintEnd_toStartOf="@+id/bt_motor3Inc" app:layout_constraintStart_toEndOf="@+id/bt_motor3Dec" app:layout_constraintTop_toBottomOf="@+id/motor2" style="@style/Widget.AppCompat.SeekBar.Discrete"/>
     <SeekBar android:id="@+id/motor4" android:layout_width="0dp" android:layout_height="30dp" android:maxHeight="20dp" android:max="285" android:progress="150" android:minHeight="20dp" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" android:min="60" app:layout_constraintBottom_toTopOf="@+id/motor5" app:layout_constraintEnd_toStartOf="@+id/bt_motor4Inc" app:layout_constraintStart_toEndOf="@+id/bt_motor4Dec" app:layout_constraintTop_toBottomOf="@+id/motor3" style="@style/Widget.AppCompat.SeekBar.Discrete"/>
     <SeekBar android:id="@+id/motor6" android:layout_width="0dp" android:layout_height="30dp" android:maxHeight="20dp" android:max="285" android:progress="150" android:minHeight="20dp" android:layout_marginStart="8dp" android:layout_marginEnd="8dp" android:min="149" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toStartOf="@+id/bt_motor6Inc" app:layout_constraintStart_toEndOf="@+id/bt_motor6Dec" app:layout_constraintTop_toBottomOf="@+id/motor5" style="@style/Widget.AppCompat.SeekBar.Discrete"/>
-    <TextView android:id="@+id/textView4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor 3" android:layout_marginStart="8dp" app:layout_constraintStart_toEndOf="@+id/imageView" app:layout_constraintTop_toTopOf="@+id/motor3"/>
-    <TextView android:id="@+id/textView7" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor 4" android:layout_marginStart="8dp" app:layout_constraintHorizontal_chainStyle="packed" app:layout_constraintStart_toEndOf="@+id/imageView" app:layout_constraintTop_toTopOf="@+id/motor4"/>
-    <TextView android:id="@+id/textView8" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor 2" android:layout_marginStart="8dp" app:layout_constraintStart_toEndOf="@+id/imageView" app:layout_constraintTop_toTopOf="@+id/motor2"/>
-    <TextView android:id="@+id/textView6" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor 5" android:layout_marginStart="8dp" app:layout_constraintStart_toEndOf="@+id/imageView" app:layout_constraintTop_toTopOf="@+id/motor5"/>
-    <TextView android:id="@+id/textView9" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor 6" android:layout_marginStart="8dp" app:layout_constraintStart_toEndOf="@+id/imageView" app:layout_constraintTop_toTopOf="@+id/motor6"/>
-    <TextView android:id="@+id/textView5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Motor 1" android:layout_marginStart="8dp" app:layout_constraintStart_toEndOf="@+id/imageView" app:layout_constraintTop_toTopOf="@+id/motor1"/>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="8dp"
+        android:text="Motor 3"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/motor3" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="8dp"
+        android:text="Motor 4"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/motor4" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="8dp"
+        android:text="Motor 2"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/motor2" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="8dp"
+        android:text="Motor 5"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/motor5" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-14dp"
+        android:layout_marginTop="8dp"
+        android:text="Motor 6"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/motor6" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-15dp"
+        android:layout_marginTop="8dp"
+        android:text="Motor 1"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/motor1" />
     <ImageButton android:id="@+id/bt_motor1Dec" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" app:layout_constraintStart_toEndOf="@+id/textView5" app:layout_constraintTop_toTopOf="@+id/motor1" app:srcCompat="@android:drawable/arrow_down_float"/>
     <ImageButton android:id="@+id/bt_motor1Inc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" app:layout_constraintEnd_toStartOf="@+id/bt_motor1Neutral" app:layout_constraintTop_toTopOf="@+id/motor1" app:srcCompat="@android:drawable/arrow_up_float"/>
     <ImageButton android:id="@+id/bt_motor2Inc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" app:layout_constraintEnd_toStartOf="@+id/bt_motor2Neutral" app:layout_constraintTop_toTopOf="@+id/motor2" app:srcCompat="@android:drawable/arrow_up_float"/>
     <ImageButton android:id="@+id/bt_motor3Inc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" app:layout_constraintEnd_toStartOf="@+id/bt_motor3Neutral" app:layout_constraintTop_toTopOf="@+id/motor3" app:srcCompat="@android:drawable/arrow_up_float"/>
     <ImageButton android:id="@+id/bt_motor4Inc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" app:layout_constraintEnd_toStartOf="@+id/bt_motor4Neutral" app:layout_constraintTop_toTopOf="@+id/motor4" app:srcCompat="@android:drawable/arrow_up_float"/>
     <ImageButton android:id="@+id/bt_motor5Inc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginEnd="8dp" app:layout_constraintEnd_toStartOf="@+id/bt_motor5Neutral" app:layout_constraintTop_toTopOf="@+id/motor5" app:srcCompat="@android:drawable/arrow_up_float"/>
-    <Button android:textSize="10sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor1Neutral" android:background="@drawable/button_background" android:layout_width="wrap_content" android:layout_height="31dp" android:text="Neutral" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/motor1"/>
-    <Button android:textSize="10sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor2Neutral" android:background="@drawable/button_background" android:layout_width="wrap_content" android:layout_height="31dp" android:text="Neutral" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/motor2"/>
-    <Button android:textSize="10sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor3Neutral" android:background="@drawable/button_background" android:layout_width="wrap_content" android:layout_height="31dp" android:text="Neutral" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/motor3"/>
-    <Button android:textSize="10sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor4Neutral" android:background="@drawable/button_background" android:layout_width="wrap_content" android:layout_height="31dp" android:text="Neutral" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/motor4"/>
-    <Button android:textSize="10sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor5Neutral" android:background="@drawable/button_background" android:layout_width="wrap_content" android:layout_height="31dp" android:text="Neutral" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/motor5"/>
-    <Button android:textSize="10sp" android:textColor="@color/buttonTextColor" android:id="@+id/bt_motor6Neutral" android:background="@drawable/button_background" android:layout_width="wrap_content" android:layout_height="31dp" android:text="Neutral" android:layout_marginEnd="8dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@+id/motor6"/>
-    <Button 
-        android:id="@+id/bt_disconnect" 
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Safe Disconnect"
-        android:textSize="16sp"
-        android:textColor="@color/buttonTextColor"
+
+    <Button
+        android:id="@+id/bt_motor1Neutral"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginEnd="24dp"
         android:background="@drawable/button_background"
-        android:layout_marginStart="32dp"
+        android:text="Neutral"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/motor1" />
+
+    <Button
+        android:id="@+id/bt_motor2Neutral"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/button_background"
+        android:text="Neutral"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/motor2" />
+
+    <Button
+        android:id="@+id/bt_motor3Neutral"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/button_background"
+        android:text="Neutral"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/motor3" />
+
+    <Button
+        android:id="@+id/bt_motor4Neutral"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/button_background"
+        android:text="Neutral"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/motor4" />
+
+    <Button
+        android:id="@+id/bt_motor5Neutral"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/button_background"
+        android:text="Neutral"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/motor5" />
+
+    <Button
+        android:id="@+id/bt_motor6Neutral"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/button_background"
+        android:text="Neutral"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/motor6" />
+
+    <Button
+        android:id="@+id/bt_disconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/button_background"
         android:padding="12dp"
+        android:text="Safe Disconnect"
+        android:textColor="@color/buttonTextColor"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.027"
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

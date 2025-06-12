@@ -28,7 +28,7 @@
         </activity>
 
         <activity android:theme="@style/Theme.RoboticArm" android:label="Control" android:name="com.example.roboticarm.ArmControl" android:screenOrientation="landscape"/>
-        <activity android:theme="@style/Theme.RoboticArm" android:label="@string/select" android:name="com.example.roboticarm.Select" android:screenOrientation="portrait"/>
+        <activity android:theme="@style/Theme.RoboticArm" android:label="@string/select" android:name="com.example.roboticarm.Select" android:screenOrientation="landscape"/>
         <activity android:name="com.example.roboticarm.DeviceList" android:screenOrientation="portrait"/>
         <activity android:name="com.example.roboticarm.RecordAndPlay" android:screenOrientation="landscape"/>
 
